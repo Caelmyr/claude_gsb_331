@@ -219,6 +219,16 @@ def list_steps(run_id: str) -> List[int]:
     return sorted(steps)
 
 
+def clear_steps(run_id: str) -> None:
+    """Delete every persisted step shard for a run (used by reset)."""
+    d = run_steps_dir(run_id)
+    if not os.path.isdir(d):
+        return
+    for name in os.listdir(d):
+        if name.endswith(".json"):
+            delete_file(os.path.join(d, name))
+
+
 def save_series(run_id: str, series: List[Dict[str, Any]]) -> None:
     atomic_write_json(run_series_path(run_id), series)
 

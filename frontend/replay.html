@@ -10,7 +10,7 @@
   <nav class="topnav" id="topnav"></nav>
   <main class="container">
     <h1 class="page-title">回放与时间轴</h1>
-    <p class="page-sub">拖动时间轴，快速回放任意时间步的个体快照（按时间步分片存储）。</p>
+    <p class="page-sub">拖动时间轴回放任意时间步的个体快照；点击画布上的个体即可<strong>追踪轨迹</strong>，支持多选并用颜色区分。</p>
 
     <div class="card">
       <div class="row between">
@@ -31,9 +31,31 @@
 
     <div class="grid grid-4" id="statTiles"></div>
 
-    <div class="card">
-      <div class="canvas-wrap"><canvas id="canvas"></canvas></div>
-      <div class="legend" id="legend"></div>
+    <div class="grid grid-track">
+      <div class="card">
+        <div class="canvas-wrap"><canvas id="canvas" class="pickable" title="点击个体以追踪 / 取消追踪"></canvas></div>
+        <div class="legend" id="legend"></div>
+        <p class="muted small" style="margin:10px 0 0">
+          <strong>点击画布中的个体</strong>即可追踪（连续点击可多选，再次点击取消）；
+          <span style="color:#2ecc71">绿圈＝中途出现</span>，<span style="color:#e74c3c">红 ✕＝中途消失（驶离 / 死亡 / 移除）</span>，环形世界越过边界时折线自动断开。
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="row between">
+          <h3 style="margin:0">个体轨迹追踪</h3>
+          <div class="row gap-6">
+            <label class="muted small"><input type="checkbox" id="showTracks" checked> 显示轨迹</label>
+            <button class="btn small" id="clearTracksBtn">全部清除</button>
+          </div>
+        </div>
+        <div class="row gap-6" style="margin-top:10px">
+          <input id="trackIdInput" placeholder="输入个体 id 后回车，如 rb00042" style="flex:1">
+          <button class="btn small" id="trackIdBtn">追踪</button>
+        </div>
+        <div id="trackChips" class="track-chips" style="margin-top:12px"></div>
+        <div id="trackDetail" class="track-detail" style="margin-top:14px"></div>
+      </div>
     </div>
   </main>
 

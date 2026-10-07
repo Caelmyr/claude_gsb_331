@@ -223,6 +223,25 @@ def create_app() -> Flask:
         except KeyError as exc:
             return _err(exc, 404)
 
+    @app.route("/api/runs/<run_id>/trajectories")
+    def run_trajectories(run_id: str):
+        # Individual ids are joined strictly by id, never by proximity, so a
+        # caller may ask for several individuals at once and tracks can never
+        # get cross-wired even when positions/states coincide.
+        raw = request.args.get("ids", "")
+        ids = [s.strip() for s in raw.split(",") if s.strip()]
+        if not ids:
+            return _err(ValueError("ids 参数不能为空"), 400)
+        if len(ids) > 100:
+            return _err(ValueError("一次最多追踪 100 个个体"), 400)
+        step_from = request.args.get("from", 0, type=int)
+        step_to = request.args.get("to", None, type=int)
+        try:
+            return jsonify(manager.get_trajectories(
+                run_id, ids, step_from=step_from, step_to=step_to))
+        except KeyError as exc:
+            return _err(exc, 404)
+
     @app.route("/api/runs/<run_id>/events")
     def run_events(run_id: str):
         try:

@@ -43,10 +43,18 @@ class EcologyABM(Engine):
         self.perception = float(self.config["perception"])
         self.boids: List[Dict[str, Any]] = []
         self.predators: List[Dict[str, Any]] = []
-        for i in range(int(self.config["n_boids"])):
-            self.boids.append(self._agent("boid", f"b{i:04d}"))
-        for i in range(int(self.config["n_predators"])):
-            self.predators.append(self._agent("predator", f"p{i:04d}"))
+        # Monotonic id counters: ids are the join key for trajectory tracking
+        # and must never be reused after a cull (a reused id would splice two
+        # different animals into one trajectory).
+        self._boid_seq = 0
+        self._pred_seq = 0
+        for _ in range(int(self.config["n_boids"])):
+            self.boids.append(self._agent("boid", f"b{self._boid_seq:04d}"))
+            self._boid_seq += 1
+        for _ in range(int(self.config["n_predators"])):
+            self.predators.append(self._agent("predator",
+                                              f"p{self._pred_seq:04d}"))
+            self._pred_seq += 1
         self._eaten = 0
         self._last_mean_neighbors = 0.0
 
@@ -217,7 +225,9 @@ class EcologyABM(Engine):
         if t == "release_predators":
             count = int(p.get("count", 5))
             for _ in range(count):
-                self.predators.append(self._agent("predator", f"p{len(self.predators):04d}"))
+                p_agent = self._agent("predator", f"p{self._pred_seq:04d}")
+                self._pred_seq += 1
+                self.predators.append(p_agent)
             return {"applied": True, "reason": f"投放了 {count} 只捕食者"}
         if t == "cull_foxes":
             k = self._cull_predators(float(p.get("fraction", 0.5)))

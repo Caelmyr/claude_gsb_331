@@ -217,6 +217,9 @@ class RunManager:
             meta["current_step"] = 0
             meta["status"] = "ready"
             meta["updated_at"] = util.now_iso()
+            # Drop every shard of the previous run so the reset run can never
+            # leak old trajectories into its timeline.
+            storage.clear_steps(run_id)
             storage.save_step(run_id, 0, engine.snapshot())
             storage.save_series(run_id, [{"step": 0, **engine.stats()}])
             storage.save_events(run_id, [])
@@ -286,6 +289,58 @@ class RunManager:
 
     def get_individuals(self, run_id: str, step: Optional[int] = None) -> List[Dict[str, Any]]:
         return self.get_snapshot(run_id, step).get("individuals", [])
+
+    def get_trajectories(self, run_id: str, ids: List[str],
+                         step_from: int = 0,
+                         step_to: Optional[int] = None) -> Dict[str, Any]:
+        """Join per-step snapshots into one trajectory per individual id.
+
+        Joining is done *strictly by the stable ``id`` field* — never by
+        position/state proximity — so two individuals that happen to occupy the
+        same cell (or share a state, or one of which has already vanished) can
+        never be stitched into the same polyline.  A step where an id is absent
+        from the snapshot is simply missing from its ``points`` sequence; the
+        frontend uses the gap to break the polyline and mark the birth/death
+        endpoint (vehicle leaving the road, death, recovery of a removed
+        individual, mid-run spawn, …).
+
+        The most recent step may live only in the in-memory engine (the run is
+        still stepping and the next sharding interval has not arrived), so it
+        is merged from the engine whenever it falls inside the requested range.
+        """
+        with self._lock_for(run_id):
+            engine, meta = self._require(run_id)
+            wanted = set(ids)
+            from_step = max(0, int(step_from))
+            to_step = int(step_to) if step_to is not None else meta["current_step"]
+            tracks: Dict[str, List[Dict[str, Any]]] = {i: [] for i in wanted}
+
+            observed: List[int] = []
+            for s in storage.list_steps(run_id):
+                if s < from_step or s > to_step:
+                    continue
+                snap = storage.load_step(run_id, s)
+                if snap is None:
+                    continue
+                observed.append(int(snap.get("step", s)))
+                for a in snap.get("individuals", []):
+                    aid = a.get("id")
+                    if aid in wanted:
+                        tracks[aid].append({**a, "step": int(snap.get("step", s))})
+
+            live_step = engine.step_count if engine is not None else None
+            if live_step is not None and from_step <= live_step <= to_step \
+                    and live_step not in observed:
+                observed.append(live_step)
+                for a in engine.individuals():
+                    aid = a.get("id")
+                    if aid in wanted:
+                        tracks[aid].append({**a, "step": live_step})
+
+            observed.sort()
+            return {"ids": list(wanted), "step_from": from_step,
+                    "step_to": to_step, "observed_steps": observed,
+                    "tracks": tracks}
 
 
 # Global singleton used by the Flask app.

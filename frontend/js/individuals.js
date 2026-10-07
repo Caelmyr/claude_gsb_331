@@ -5,6 +5,8 @@ let all = [];
 let filtered = [];
 let page = 0;
 let columns = ["id", "type", "state", "x", "y"];
+let currentRunId = null;
+let currentStep = 0;
 
 async function refreshRuns() {
   const runs = await fillRunSelect(el("runSelect"));
@@ -28,6 +30,8 @@ async function load() {
   const { steps } = await get(`/api/runs/${runId}/steps`);
   step = nearestStep(steps, step);
   el("stepInput").value = step;
+  currentRunId = runId;
+  currentStep = step;
   const snap = await get(`/api/runs/${runId}/snapshot?step=${step}`);
   all = snap.individuals || [];
 
@@ -65,14 +69,15 @@ function applyFilter() {
 function render() {
   const start = page * PAGE_SIZE;
   const rows = filtered.slice(start, start + PAGE_SIZE);
-  const head = columns.map((c) => `<th class="${c === "x" || c === "y" ? "num" : ""}">${esc(c)}</th>`).join("");
+  const head = columns.map((c) => `<th class="${c === "x" || c === "y" ? "num" : ""}">${esc(c)}</th>`).join("")
+    + '<th>轨迹</th>';
   const body = rows.map((a) => `<tr>${columns.map((c) => {
     const v = a[c];
     const cls = (c === "x" || c === "y" || typeof v === "number") ? "num" : "";
     return `<td class="${cls}">${fmt(v)}</td>`;
-  }).join("")}</tr>`).join("");
-  el("itable").innerHTML = `<thead><tr>${head}</tr></thead><tbody>${body || '<tr><td colspan="' + columns.length + '" class="muted">无数据</td></tr>'}</tbody>`;
-  el("summary").textContent = `共 ${all.length} 个个体，筛选后 ${filtered.length} 个；类型列 = 车辆/动物/人，状态列 = 各自的状态标签。`;
+  }).join("")}<td><button class="btn small track-btn" data-id="${esc(a.id)}">追踪轨迹</button></td></tr>`).join("");
+  el("itable").innerHTML = `<thead><tr>${head}</tr></thead><tbody>${body || '<tr><td colspan="' + (columns.length + 1) + '" class="muted">无数据</td></tr>'}</tbody>`;
+  el("summary").textContent = `共 ${all.length} 个个体，筛选后 ${filtered.length} 个；类型列 = 车辆/动物/人，状态列 = 各自的状态标签。点击「追踪轨迹」可在回放页查看该个体从第 0 步至今的完整路径与状态变化。`;
   el("pageInfo").textContent = `第 ${page + 1} / ${Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))} 页`;
   el("prevBtn").disabled = page === 0;
   el("nextBtn").disabled = (page + 1) * PAGE_SIZE >= filtered.length;
@@ -91,6 +96,14 @@ function init() {
     el("stepInput").value = meta.current_step;
     load();
   };
+  el("itable").addEventListener("click", (e) => {
+    const btn = e.target.closest(".track-btn");
+    if (!btn || !currentRunId) return;
+    const q = new URLSearchParams({
+      run: currentRunId, step: String(currentStep), track: btn.dataset.id,
+    });
+    window.location.href = `/replay.html?${q.toString()}`;
+  });
   refreshRuns().then(load).catch((e) => showNotice(el("summary"), "加载失败：" + e.message, "error"));
 }
 
