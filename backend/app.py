@@ -230,6 +230,18 @@ def create_app() -> Flask:
         except KeyError as exc:
             return _err(exc, 404)
 
+    @app.route("/api/runs/<run_id>/tracks")
+    def run_tracks(run_id: str):
+        raw = request.args.get("ids", "")
+        ids = [s.strip() for s in raw.split(",") if s.strip()]
+        to_step = request.args.get("to_step", type=int)
+        try:
+            return jsonify(manager.get_tracks(run_id, ids, to_step=to_step))
+        except KeyError as exc:
+            return _err(exc, 404)
+        except ValueError as exc:
+            return _err(exc, 400)
+
     @app.route("/api/runs/<run_id>/interventions", methods=["POST"])
     def apply_intervention(run_id: str):
         try:

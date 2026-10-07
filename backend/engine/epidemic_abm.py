@@ -166,6 +166,9 @@ class EpidemicABM(Engine):
     def bounds(self) -> Dict[str, float]:
         return {"width": self.width, "height": self.height}
 
+    def topology(self) -> Dict[str, bool]:
+        return {"wrap_x": True, "wrap_y": True}
+
     def palette(self) -> Dict[str, Dict[str, str]]:
         return {
             "susceptible": {"label": "易感", "color": "#3498db"},

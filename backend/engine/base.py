@@ -79,6 +79,15 @@ class Engine(ABC):
         """
         return None
 
+    def topology(self) -> Dict[str, bool]:
+        """World wrapping flags ``{"wrap_x", "wrap_y"}``.
+
+        ``True`` means the coordinate is periodic (motion crossing one edge
+        re-enters on the opposite side).  Trajectory rendering uses this to
+        break polylines at the seam instead of drawing a line across the map.
+        """
+        return {"wrap_x": False, "wrap_y": False}
+
     def apply_intervention(self, itv: Dict[str, Any]) -> Dict[str, Any]:
         """Apply an intervention; subclasses override for the types they know.
 
@@ -94,6 +103,7 @@ class Engine(ABC):
         return {
             "step": self.step_count,
             "bounds": self.bounds(),
+            "topology": self.topology(),
             "palette": self.palette(),
             "stats": self.stats(),
             "substrate": self.substrate(),

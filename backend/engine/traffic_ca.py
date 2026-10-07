@@ -146,6 +146,9 @@ class TrafficCA(Engine):
     def bounds(self) -> Dict[str, float]:
         return {"width": float(self.length), "height": float(self.lanes)}
 
+    def topology(self) -> Dict[str, bool]:
+        return {"wrap_x": True, "wrap_y": False}
+
     def palette(self) -> Dict[str, Dict[str, str]]:
         return {
             "moving": {"label": "行驶", "color": "#2ecc71"},

@@ -16,7 +16,7 @@ from __future__ import annotations
 import threading
 from typing import Any, Dict, List, Optional
 
-from . import models, storage, util
+from . import models, storage, tracks, util
 from .engine import make_engine
 from .engine.base import Engine
 
@@ -286,6 +286,17 @@ class RunManager:
 
     def get_individuals(self, run_id: str, step: Optional[int] = None) -> List[Dict[str, Any]]:
         return self.get_snapshot(run_id, step).get("individuals", [])
+
+    def get_tracks(self, run_id: str, individual_ids: List[str],
+                   to_step: Optional[int] = None) -> Dict[str, Any]:
+        """Reconstruct full trajectories (step 0 .. current) for individuals."""
+        with self._lock_for(run_id):
+            self._require(run_id)
+            if not individual_ids:
+                raise ValueError("individual_ids 不能为空")
+            if len(individual_ids) > 30:
+                raise ValueError("单次最多追踪 30 个个体")
+            return tracks.build_tracks(run_id, individual_ids, to_step=to_step)
 
 
 # Global singleton used by the Flask app.

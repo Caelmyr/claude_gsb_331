@@ -34,12 +34,28 @@
     <div class="card">
       <div class="canvas-wrap"><canvas id="canvas"></canvas></div>
       <div class="legend" id="legend"></div>
+      <p class="muted small" style="margin:8px 0 0">提示：点击画布上的任意个体即可追踪（再次点击其他个体可同时追踪多个，颜色区分）；折线在个体消失处终止并以 × 标记，在环形道路/环面跨越边界时自动断开。</p>
+    </div>
+
+    <div class="card">
+      <h2>个体轨迹追踪</h2>
+      <div class="row between" style="margin-bottom:10px">
+        <div class="row gap-6" id="trackList"></div>
+        <div class="row gap-6">
+          <input id="trackIdInput" placeholder="输入个体 id（逗号分隔多个）后回车…" style="width:260px">
+          <button class="btn small" id="trackClearBtn">全部清除</button>
+        </div>
+      </div>
+      <div class="notice" id="trackNotice" style="display:none"></div>
+      <div id="trackSequence"></div>
+      <p class="muted small" style="margin:8px 0 0">轨迹严格按个体 id 关联每一步快照——相邻位置、相同状态或个体已消失都不会串线；折线覆盖第 0 步至当前步，时间轴位置即轨迹终点。轨迹精度取决于快照保存间隔。</p>
     </div>
   </main>
 
   <script src="/js/api.js"></script>
   <script src="/js/common.js"></script>
   <script src="/js/render.js"></script>
+  <script src="/js/track.js"></script>
   <script src="/js/replay.js"></script>
 </body>
 </html>

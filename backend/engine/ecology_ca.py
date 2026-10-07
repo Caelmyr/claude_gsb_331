@@ -209,6 +209,9 @@ class EcologyCA(Engine):
     def bounds(self) -> Dict[str, float]:
         return {"width": float(self.width), "height": float(self.height)}
 
+    def topology(self) -> Dict[str, bool]:
+        return {"wrap_x": True, "wrap_y": True}
+
     def substrate(self) -> Optional[List[List[bool]]]:
         return self.grass
 

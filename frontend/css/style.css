@@ -228,3 +228,55 @@ td.num, th.num { text-align: right; font-family: var(--mono); }
 
 /* timeline slider */
 .timeline { width: 100%; margin: 12px 0; accent-color: var(--accent); }
+
+/* ---- trajectory tracking ------------------------------------------------ */
+.track-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-2);
+  cursor: pointer;
+  font-size: 12px;
+  max-width: 320px;
+}
+.track-chip:hover { border-color: var(--accent); }
+.track-chip.focus { border-color: var(--accent); background: var(--panel-2);
+                    box-shadow: 0 0 0 1px var(--accent) inset; }
+.track-line { width: 16px; height: 3px; border-radius: 2px; flex: none; }
+.track-line-lg { width: 22px; height: 4px; border-radius: 2px; flex: none; }
+.track-x {
+  border: none; background: transparent; color: var(--muted);
+  cursor: pointer; font-size: 14px; line-height: 1; padding: 0 2px;
+}
+.track-x:hover { color: var(--red); }
+.track-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.track-badge.born { color: #7ee787; border-color: #2c5e36; }
+.track-badge.gone { color: var(--red); border-color: #5b2a2a; }
+.track-badge.alive { color: var(--accent-2); border-color: #2c4a7a; }
+.track-badge.seg { color: var(--orange); border-color: #5b4a1f; }
+
+#trackList { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; min-width: 0; }
+.seq-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            margin: 14px 0 10px; padding-top: 12px; border-top: 1px solid var(--border); }
+.seq-runs { display: flex; flex-wrap: wrap; gap: 8px; }
+.state-run {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 4px 10px; border: 1px solid var(--border);
+  border-radius: 6px; background: var(--bg-2); font-size: 12px;
+}
+.state-run.at-step { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.state-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
+.seq-details { margin-top: 12px; }
+.seq-table tbody tr.at-step { background: rgba(79, 140, 255, 0.16); }
+tr.row-sel { background: rgba(79, 140, 255, 0.10); }
